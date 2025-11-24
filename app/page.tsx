@@ -559,10 +559,10 @@ export default function Home() {
         setInterimTranscript('')
 
         // Handle case where recognition ends with no speech
-        if (showConfirmationRef.current || showCorrectionPromptRef.current) {
+        if ((showConfirmationRef.current || showCorrectionPromptRef.current) && !intentionalCloseRef.current) {
           // In confirmation/correction mode - restart listening with longer delay for Safari
           setTimeout(() => {
-            if (recognitionRef.current && (showConfirmationRef.current || showCorrectionPromptRef.current)) {
+            if (recognitionRef.current && (showConfirmationRef.current || showCorrectionPromptRef.current) && !intentionalCloseRef.current) {
               try {
                 recognitionRef.current.start()
                 setIsListening(true)
