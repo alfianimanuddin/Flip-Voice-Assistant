@@ -511,7 +511,11 @@ export default function Home() {
             setInterimTranscript('')
             return
           }
-          setTranscript(prev => (prev ? prev + ' ' : '') + finalText)
+          setTranscript(prev => {
+            const newTranscript = (prev ? prev + ' ' : '') + finalText
+            transcriptRef.current = newTranscript // Update ref immediately to prevent race condition
+            return newTranscript
+          })
           setInterimTranscript('')
         }
 
