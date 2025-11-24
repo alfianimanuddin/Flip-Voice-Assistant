@@ -236,9 +236,9 @@ export default function Home() {
                   clearTimeout(silenceDetectionRef.current)
                 }
 
-                // Start new silence detection (2 seconds) - same as normal flow
+                // Start new silence detection (3 seconds) - same as normal flow
                 silenceDetectionRef.current = setTimeout(() => {
-                  // User has been silent for 2 seconds, process the correction value
+                  // User has been silent for 3 seconds, process the correction value
                   intentionalCloseRef.current = true // Prevent onend from restarting
                   if (recognitionRef.current) {
                     recognitionRef.current.stop()
@@ -337,7 +337,7 @@ export default function Home() {
                       }
                     }, ttsDelay)
                   }
-                }, 2000) // 2 seconds of silence
+                }, 3000) // 3 seconds of silence
 
                 return
               }
@@ -566,10 +566,10 @@ export default function Home() {
           clearTimeout(silenceDetectionRef.current)
         }
 
-        // Start new silence detection (2 seconds) - but not in confirmation mode
+        // Start new silence detection (3 seconds) - but not in confirmation mode
         if (!showConfirmationRef.current) {
           silenceDetectionRef.current = setTimeout(() => {
-            // User has been silent for 2 seconds, stop recording and extract immediately
+            // User has been silent for 3 seconds, stop recording and extract immediately
             if (recognitionRef.current) {
               recognitionRef.current.stop()
             }
@@ -578,7 +578,7 @@ export default function Home() {
 
             // Trigger immediate extraction by setting countdown to 0
             setSilenceCountdown(0)
-          }, 2000) // 2 seconds of silence
+          }, 3000) // 3 seconds of silence
         }
       }
 
