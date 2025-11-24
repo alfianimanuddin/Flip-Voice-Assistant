@@ -594,6 +594,7 @@ export default function Home() {
         if (!showConfirmationRef.current) {
           silenceDetectionRef.current = setTimeout(() => {
             // User has been silent for 3 seconds, stop recording and extract immediately
+            intentionalCloseRef.current = true // Prevent "no response" message
             if (recognitionRef.current) {
               recognitionRef.current.stop()
             }
