@@ -326,7 +326,7 @@ export default function Home() {
                     setTranscript('')
 
                     // Restart listening after prompt
-                    const ttsDelay = getTtsDelay(retryMsg.length)
+                    const ttsDelay = 100
                     setTimeout(() => {
                       if (recognitionRef.current) {
                         try {
@@ -402,7 +402,7 @@ export default function Home() {
                 speak(valuePrompt, true)
 
                 // Restart listening after TTS finishes
-                const ttsDelay = getTtsDelay(valuePrompt.length)
+                const ttsDelay = 100
                 setTimeout(() => {
                   stopSpeaking() // Make sure TTS is stopped
                   if (recognitionRef.current) {
@@ -431,7 +431,7 @@ export default function Home() {
                 speak(retryMsg, true)
 
                 // Restart listening after TTS finishes
-                const ttsDelay = getTtsDelay(retryMsg.length)
+                const ttsDelay = 100
                 setTimeout(() => {
                   stopSpeaking() // Make sure TTS is stopped
                   if (recognitionRef.current) {
@@ -465,10 +465,8 @@ export default function Home() {
               setInterimTranscript('')
               speak(correctionMsg, true)
 
-              // Restart listening after TTS finishes
-              const ttsDelay = getTtsDelay(correctionMsg.length)
+              // Restart listening immediately - TTS plays while mic listens
               setTimeout(() => {
-                stopSpeaking() // Make sure TTS is stopped
                 if (recognitionRef.current) {
                   try {
                     intentionalCloseRef.current = false
@@ -476,7 +474,7 @@ export default function Home() {
                     setIsListening(true)
                   } catch (e) {}
                 }
-              }, ttsDelay)
+              }, 100) // Minimal delay just for state to settle
               return
             }
 
