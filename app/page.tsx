@@ -839,6 +839,71 @@ export default function Home() {
         }
       }
 
+      // Validate required fields are present (not undefined/null)
+      if (!data.incomplete) {
+        const missingFields: string[] = []
+        let message = ''
+
+        if (data.type === 'transfer') {
+          if (!data.amount) missingFields.push('amount')
+          if (!data.bank) missingFields.push('bank')
+          if (!data.accountNumber) missingFields.push('accountNumber')
+
+          if (missingFields.length > 0) {
+            if (missingFields.includes('amount')) message = 'Nominalnya berapa?'
+            else if (missingFields.includes('bank') && missingFields.includes('accountNumber')) message = 'Ke bank apa dan nomor rekening berapa?'
+            else if (missingFields.includes('bank')) message = 'Ke bank apa?'
+            else if (missingFields.includes('accountNumber')) message = 'Nomor rekeningnya berapa?'
+          }
+        } else if (data.type === 'ewallet') {
+          if (!data.amount) missingFields.push('amount')
+          if (!data.ewallet) missingFields.push('ewallet')
+          if (!data.phoneNumber) missingFields.push('phoneNumber')
+
+          if (missingFields.length > 0) {
+            if (missingFields.includes('amount') && missingFields.includes('phoneNumber')) message = 'Nominal berapa dan ke nomor HP berapa?'
+            else if (missingFields.includes('amount')) message = 'Nominal berapa?'
+            else if (missingFields.includes('phoneNumber')) message = 'Ke nomor HP berapa?'
+            else if (missingFields.includes('ewallet')) message = 'E-wallet apa?'
+          }
+        } else if (data.type === 'pulsa') {
+          if (!data.amount) missingFields.push('amount')
+          if (!data.phoneNumber) missingFields.push('phoneNumber')
+
+          if (missingFields.length > 0) {
+            if (missingFields.includes('phoneNumber')) message = 'Ke nomor HP berapa?'
+            else if (missingFields.includes('amount')) message = 'Nominal berapa?'
+          }
+        } else if (data.type === 'token') {
+          if (!data.amount) missingFields.push('amount')
+          if (!data.meterNumber) missingFields.push('meterNumber')
+
+          if (missingFields.length > 0) {
+            if (missingFields.includes('meterNumber')) message = 'Nomor meter PLN-nya berapa?'
+            else if (missingFields.includes('amount')) message = 'Nominal berapa?'
+          }
+        } else if (data.type === 'gold') {
+          if (!data.amount) missingFields.push('amount')
+          if (!data.grams) missingFields.push('grams')
+
+          if (missingFields.length > 0) {
+            if (missingFields.includes('grams')) message = 'Berapa gram?'
+            else if (missingFields.includes('amount')) message = 'Nominal berapa?'
+          }
+        }
+
+        // Convert to incomplete if any required fields are missing
+        if (missingFields.length > 0) {
+          const partialData = { ...data }
+          delete partialData.incomplete
+
+          data.incomplete = true
+          data.partialData = partialData
+          data.missingFields = missingFields
+          data.message = message
+        }
+      }
+
       // Check if the command is incomplete
       if (data.incomplete) {
         console.log('Incomplete command detected:', data)
