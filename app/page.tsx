@@ -1021,9 +1021,10 @@ export default function Home() {
   // Auto-extract data after silence countdown
   useEffect(() => {
     if (silenceCountdown === 0 && transcript.trim() && !extractedData) {
-      // Set countdown to null before extraction to hide voice recording screen
-      setSilenceCountdown(null)
+      // Start extraction (isExtracting will keep the screen visible)
       extractData(transcript)
+      // Clear countdown after extraction starts to prevent re-triggering
+      setSilenceCountdown(null)
     }
   }, [silenceCountdown, transcript, extractedData])
 
@@ -1199,7 +1200,7 @@ export default function Home() {
       )}
 
       {/* Voice Recording Screen */}
-      {(isListening || (silenceCountdown !== null && silenceCountdown > 0) || showErrorPopup || isExtracting || showIncompletePrompt || showNoResponseMessage || showConfirmation) && (
+      {(isListening || silenceCountdown !== null || showErrorPopup || isExtracting || showIncompletePrompt || showNoResponseMessage || showConfirmation) && (
         <VoiceRecording
           isListening={isListening}
           transcript={transcript.trim()}
