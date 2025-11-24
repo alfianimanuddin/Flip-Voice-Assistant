@@ -284,6 +284,7 @@ export default function Home() {
                     setTimeout(() => {
                       if (recognitionRef.current) {
                         try {
+                          intentionalCloseRef.current = false
                           recognitionRef.current.start()
                           setIsListening(true)
                         } catch (e) {}
@@ -300,6 +301,7 @@ export default function Home() {
                     setTimeout(() => {
                       if (recognitionRef.current) {
                         try {
+                          intentionalCloseRef.current = false
                           recognitionRef.current.start()
                           setIsListening(true)
                         } catch (e) {}
@@ -376,6 +378,7 @@ export default function Home() {
                   stopSpeaking() // Make sure TTS is stopped
                   if (recognitionRef.current) {
                     try {
+                      intentionalCloseRef.current = false
                       recognitionRef.current.start()
                       setIsListening(true)
                     } catch (e) {}
@@ -404,6 +407,7 @@ export default function Home() {
                   stopSpeaking() // Make sure TTS is stopped
                   if (recognitionRef.current) {
                     try {
+                      intentionalCloseRef.current = false
                       recognitionRef.current.start()
                       setIsListening(true)
                     } catch (e) {}
@@ -438,6 +442,7 @@ export default function Home() {
                 stopSpeaking() // Make sure TTS is stopped
                 if (recognitionRef.current) {
                   try {
+                    intentionalCloseRef.current = false
                     recognitionRef.current.start()
                     setIsListening(true)
                   } catch (e) {}
