@@ -279,7 +279,7 @@ export default function Home() {
                     feedback.confirmation(confirmMsg)
 
                     // Restart listening for confirmation
-                    const ttsDelay = confirmMsg.length * 80 + 1500
+                    const ttsDelay = confirmMsg.length * 60 + 800
                     setTimeout(() => {
                       if (recognitionRef.current) {
                         try {
@@ -295,7 +295,7 @@ export default function Home() {
                     setTranscript('')
 
                     // Restart listening after prompt
-                    const ttsDelay = retryMsg.length * 100 + 1000
+                    const ttsDelay = retryMsg.length * 60 + 500
                     setTimeout(() => {
                       if (recognitionRef.current) {
                         try {
@@ -369,7 +369,7 @@ export default function Home() {
                 speak(valuePrompt, true)
 
                 // Restart listening after TTS finishes
-                const ttsDelay = valuePrompt.length * 100 + 1000
+                const ttsDelay = valuePrompt.length * 60 + 500
                 setTimeout(() => {
                   stopSpeaking() // Make sure TTS is stopped
                   if (recognitionRef.current) {
@@ -396,7 +396,7 @@ export default function Home() {
                 speak(retryMsg, true)
 
                 // Restart listening after TTS finishes
-                const ttsDelay = retryMsg.length * 100 + 1000
+                const ttsDelay = retryMsg.length * 60 + 500
                 setTimeout(() => {
                   stopSpeaking() // Make sure TTS is stopped
                   if (recognitionRef.current) {
@@ -429,7 +429,7 @@ export default function Home() {
               speak(correctionMsg, true)
 
               // Restart listening after TTS finishes
-              const ttsDelay = correctionMsg.length * 100 + 1000
+              const ttsDelay = correctionMsg.length * 60 + 500
               setTimeout(() => {
                 stopSpeaking() // Make sure TTS is stopped
                 if (recognitionRef.current) {
