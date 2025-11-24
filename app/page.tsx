@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Onboarding from './components/Onboarding'
 import VoiceRecording from './components/VoiceRecording'
-import { useFeedback } from './hooks/useFeedback'
+// import { useFeedback } from './hooks/useFeedback'
 import { getEnabledTypes, isTypeEnabled } from './config/transactionTypes'
 
 interface TransactionData {
@@ -157,8 +157,8 @@ export default function Home() {
     }
   }
 
-  // TTS and haptic feedback
-  const { feedback, speak, stopSpeaking, vibrate } = useFeedback()
+  // TTS and haptic feedback (commented out for now)
+  // const { feedback, speak, stopSpeaking, vibrate } = useFeedback()
 
   useEffect(() => {
     // Always show onboarding on start
@@ -332,10 +332,10 @@ export default function Home() {
 
                     // Re-confirm with updated data
                     const confirmMsg = generateConfirmationText(updatedData)
-                    feedback.confirmation(confirmMsg)
+                    // TTS: feedback.confirmation(confirmMsg)
 
                     // Restart listening for confirmation
-                    const ttsDelay = getTtsDelay(confirmMsg.length, 800)
+                    // const ttsDelay = getTtsDelay(confirmMsg.length, 800)
                     setTimeout(() => {
                       if (recognitionRef.current) {
                         try {
@@ -344,15 +344,14 @@ export default function Home() {
                           setIsListening(true)
                         } catch (e) {}
                       }
-                    }, ttsDelay)
+                    }, 100) // Minimal delay
                   } else {
                     // Couldn't parse value - ask again
                     const retryMsg = getFieldValuePrompt(field!, extractedDataRef.current)
-                    speak(retryMsg, true)
+                    // TTS: speak(retryMsg, true)
                     setTranscript('')
 
                     // Restart listening after prompt
-                    const ttsDelay = 100
                     setTimeout(() => {
                       if (recognitionRef.current) {
                         try {
@@ -361,7 +360,7 @@ export default function Home() {
                           setIsListening(true)
                         } catch (e) {}
                       }
-                    }, ttsDelay)
+                    }, 100) // Minimal delay
                   }
                 }, 3000) // 3 seconds of silence
 
@@ -425,12 +424,11 @@ export default function Home() {
                 setCorrectionMessage(valuePrompt)
                 setTranscript('') // Clear transcript for fresh value input
                 setInterimTranscript('')
-                speak(valuePrompt, true)
+                // TTS: speak(valuePrompt, true)
 
                 // Restart listening after TTS finishes
-                const ttsDelay = 100
                 setTimeout(() => {
-                  stopSpeaking() // Make sure TTS is stopped
+                  // stopSpeaking() // Make sure TTS is stopped
                   if (recognitionRef.current) {
                     try {
                       intentionalCloseRef.current = false
@@ -438,7 +436,7 @@ export default function Home() {
                       setIsListening(true)
                     } catch (e) {}
                   }
-                }, ttsDelay)
+                }, 100) // Minimal delay
                 return
               } else {
                 // Stop recognition to prevent picking up TTS
@@ -454,12 +452,11 @@ export default function Home() {
                 const retryMsg = getCorrectionPrompt(data.type)
                 setTranscript('') // Clear transcript
                 setInterimTranscript('')
-                speak(retryMsg, true)
+                // TTS: speak(retryMsg, true)
 
                 // Restart listening after TTS finishes
-                const ttsDelay = 100
                 setTimeout(() => {
-                  stopSpeaking() // Make sure TTS is stopped
+                  // stopSpeaking() // Make sure TTS is stopped
                   if (recognitionRef.current) {
                     try {
                       intentionalCloseRef.current = false
@@ -467,7 +464,7 @@ export default function Home() {
                       setIsListening(true)
                     } catch (e) {}
                   }
-                }, ttsDelay)
+                }, 100) // Minimal delay
                 return
               }
             }
@@ -489,9 +486,9 @@ export default function Home() {
               setCorrectionMessage(correctionMsg)
               setTranscript('') // Clear transcript
               setInterimTranscript('')
-              speak(correctionMsg, true)
+              // TTS: speak(correctionMsg, true)
 
-              // Restart listening immediately - TTS plays while mic listens
+              // Restart listening immediately
               setTimeout(() => {
                 if (recognitionRef.current) {
                   try {
@@ -500,7 +497,7 @@ export default function Home() {
                     setIsListening(true)
                   } catch (e) {}
                 }
-              }, 100) // Minimal delay just for state to settle
+              }, 100) // Minimal delay
               return
             }
 
@@ -516,11 +513,10 @@ export default function Home() {
               setIsListening(false)
 
               // Voice feedback for cancellation
-              const cancelMsg = 'Oke, coba sebutin ulang transaksimu ya'
-              speak(cancelMsg, true)
+              // const cancelMsg = 'Oke, coba sebutin ulang transaksimu ya'
+              // TTS: speak(cancelMsg, true)
 
-              // Reset state and restart after TTS finishes
-              const cancelDelay = cancelMsg.length * 80 + 500 // ~80ms per char for Indonesian TTS
+              // Reset state and restart
               setTimeout(() => {
                 setShowConfirmation(false)
                 setShowCorrectionPrompt(false)
@@ -533,7 +529,7 @@ export default function Home() {
                 setAttemptsCount(0)
                 setHadIncompleteAttempt(false)
                 startRecording()
-              }, cancelDelay)
+              }, 100) // Minimal delay
               return
             }
 
@@ -549,15 +545,14 @@ export default function Home() {
               setIsListening(false)
               setShowConfirmation(false)
               // Success feedback
-              vibrate('success')
-              speak('Oke, membuka halaman pembayaran')
+              // vibrate('success')
+              // TTS: speak('Oke, membuka halaman pembayaran')
               // Open payment URL - use location.href to avoid popup blocker
               const url = generateShareableUrl(extractedDataRef.current)
               window.location.href = url
-              // Reset app state after TTS completes - return to default voice recording
-              const resetDelay = 'Oke, membuka halaman pembayaran'.length * 80 + 1000
+              // Reset app state - return to default voice recording
               setTimeout(() => {
-                stopSpeaking()
+                // stopSpeaking()
                 setExtractedData(null)
                 setTranscript('')
                 setInterimTranscript('')
@@ -567,7 +562,7 @@ export default function Home() {
                 setSilenceCountdown(null)
                 // Restart recording
                 startRecording()
-              }, resetDelay)
+              }, 100) // Minimal delay
               return
             }
             // In confirmation mode but didn't say confirmation word - ignore
@@ -638,7 +633,7 @@ export default function Home() {
         } else if (!transcriptRef.current.trim() && !extractedDataRef.current && !intentionalCloseRef.current) {
           // No transcript and no extracted data - show no response message
           setShowNoResponseMessage(true)
-          feedback.noResponse()
+          // TTS: feedback.noResponse()
 
           // Auto-restart listening after feedback delay for voice-only experience
           setTimeout(() => {
@@ -650,7 +645,7 @@ export default function Home() {
                 // Already running or failed
               }
             }
-          }, 3000) // 3 seconds to hear feedback and prepare to speak again
+          }, 100) // Minimal delay
         }
         // Reset intentional close flag
         intentionalCloseRef.current = false
@@ -688,12 +683,12 @@ export default function Home() {
       lastSpeechTimeRef.current = Date.now()
 
       // Stop any TTS before starting recognition
-      stopSpeaking()
+      // stopSpeaking()
 
       recognitionRef.current.start()
 
       // Haptic feedback when starting to listen
-      vibrate('listening')
+      // vibrate('listening')
 
       // Set 5s timeout for no response (only for incomplete prompts)
       if (showIncompletePrompt) {
@@ -918,7 +913,7 @@ export default function Home() {
         setShowIncompletePrompt(true)
 
         // Voice feedback for missing info
-        feedback.askForInfo(incompleteMsg)
+        // TTS: feedback.askForInfo(incompleteMsg)
 
         // Stop extracting to remove loading
         setIsExtracting(false)
@@ -927,7 +922,7 @@ export default function Home() {
         // After showing the message with typing effect, automatically restart recording to continue conversation
         // Calculate delay based on message length for natural reading time
         const typingDelay = (data.message?.length || 50) * 30 // 30ms per character
-        const readingDelay = 3000 // Additional 3 seconds for reading
+        const readingDelay = 1000 // 1 second for reading
         const totalDelay = typingDelay + readingDelay
 
         setTimeout(() => {
@@ -964,11 +959,9 @@ export default function Home() {
 
         // Generate and speak confirmation message
         const confirmMsg = generateConfirmationText(finalData)
-        feedback.confirmation(confirmMsg)
+        // TTS: feedback.confirmation(confirmMsg)
 
-        // Start listening for confirmation after TTS finishes
-        // Delay based on message length for natural reading time
-        const ttsDelay = confirmMsg.length * 50 + 1000 // ~50ms per char + 1s buffer
+        // Start listening for confirmation
         setTimeout(() => {
           if (recognitionRef.current) {
             try {
@@ -983,7 +976,7 @@ export default function Home() {
               // Recognition might already be running
             }
           }
-        }, ttsDelay)
+        }, 100) // Minimal delay
 
         // Send feedback for learning - successful transaction!
         try {
@@ -1018,7 +1011,7 @@ export default function Home() {
       setErrorMessage(errorMsg)
       setShowErrorPopup(true)
       // Voice and haptic feedback for error
-      feedback.error(errorMsg)
+      // TTS: feedback.error(errorMsg)
     } finally {
       setIsExtracting(false)
       setIsProcessingComplete(false)
