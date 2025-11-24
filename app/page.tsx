@@ -5,6 +5,7 @@ import Onboarding from './components/Onboarding'
 import VoiceRecording from './components/VoiceRecording'
 import { useFeedback } from './hooks/useFeedback'
 import { getEnabledTypes, isTypeEnabled } from './config/transactionTypes'
+import { parseTransaction } from '../lib/parser'
 
 interface TransactionData {
   type: 'transfer' | 'ewallet' | 'pulsa' | 'gold' | 'token'
@@ -770,24 +771,40 @@ export default function Home() {
       console.log('Extracting from text:', sanitizedText)
       console.log('Conversation context:', conversationContext)
 
-      const response = await fetch('/api/extract', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: sanitizedText,
-          context: conversationContext
-        }),
-      })
+      let data: any = null
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        console.error('API Error:', errorData)
-        throw new Error(errorData.error || 'Failed to extract data')
+      // Try local parsing first (instant, no API call)
+      if (!conversationContext) {
+        const localResult = parseTransaction(sanitizedText)
+        if (localResult) {
+          console.log('Local parsing succeeded:', localResult)
+          data = localResult
+        }
       }
 
-      const data = await response.json()
+      // Fall back to API if local parsing failed
+      if (!data) {
+        console.log('Falling back to API...')
+        const response = await fetch('/api/extract', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            text: sanitizedText,
+            context: conversationContext
+          }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('API Error:', errorData)
+          throw new Error(errorData.error || 'Failed to extract data')
+        }
+
+        data = await response.json()
+      }
+
       console.log('Extracted data:', data)
 
       // Validate that we have a valid transaction type
