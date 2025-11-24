@@ -482,9 +482,9 @@ export default function Home() {
               // Success feedback
               vibrate('success')
               speak('Oke, membuka halaman pembayaran')
-              // Open payment URL
+              // Open payment URL - use location.href to avoid popup blocker
               generateShareableUrl(extractedDataRef.current).then(url => {
-                window.open(url, '_blank')
+                window.location.href = url
               })
               // Reset app state after TTS completes - return to default voice recording
               const resetDelay = 'Oke, membuka halaman pembayaran'.length * 80 + 1000
@@ -544,17 +544,24 @@ export default function Home() {
         setInterimTranscript('')
 
         // Handle case where recognition ends with no speech
-        if (showConfirmationRef.current) {
-          // In confirmation mode - restart listening
+        if (showConfirmationRef.current || showCorrectionPromptRef.current) {
+          // In confirmation/correction mode - restart listening with longer delay for Safari
           setTimeout(() => {
-            if (recognitionRef.current && showConfirmationRef.current) {
+            if (recognitionRef.current && (showConfirmationRef.current || showCorrectionPromptRef.current)) {
               try {
                 recognitionRef.current.start()
+                setIsListening(true)
               } catch (e) {
-                // Already running or failed
+                // Already running or failed - try again after short delay
+                setTimeout(() => {
+                  try {
+                    recognitionRef.current?.start()
+                    setIsListening(true)
+                  } catch (e2) {}
+                }, 300)
               }
             }
-          }, 100)
+          }, 500)
         } else if (!transcriptRef.current.trim() && !extractedDataRef.current && !intentionalCloseRef.current) {
           // No transcript and no extracted data - show no response message
           setShowNoResponseMessage(true)
