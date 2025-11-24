@@ -11,10 +11,23 @@ interface FeedbackEntry {
   success: boolean
 }
 
-const FEEDBACK_FILE = path.join(process.cwd(), 'data', 'learning-feedback.json')
+// Check if running on Vercel (read-only filesystem)
+const IS_VERCEL = process.env.VERCEL === '1'
+
+const FEEDBACK_FILE = IS_VERCEL
+  ? '/tmp/learning-feedback.json'
+  : path.join(process.cwd(), 'data', 'learning-feedback.json')
 
 // Ensure data directory and file exist
 function ensureFeedbackFile() {
+  if (IS_VERCEL) {
+    // On Vercel, just ensure /tmp file exists
+    if (!fs.existsSync(FEEDBACK_FILE)) {
+      fs.writeFileSync(FEEDBACK_FILE, JSON.stringify([]))
+    }
+    return
+  }
+
   const dataDir = path.join(process.cwd(), 'data')
   if (!fs.existsSync(dataDir)) {
     fs.mkdirSync(dataDir, { recursive: true })
