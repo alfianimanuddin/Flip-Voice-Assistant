@@ -1117,31 +1117,28 @@ export default function Home() {
   const generateShareableUrl = (data: TransactionData): string => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
-    // Prepare payment data
-    const paymentData: Record<string, unknown> = {
-      type: data.type,
-      amount: data.amount
-    }
+    // Build query parameters
+    const params = new URLSearchParams()
+    params.append('type', data.type)
+    if (data.amount) params.append('amount', String(data.amount))
 
     // Add type-specific data
     if (data.type === 'transfer') {
-      paymentData.bank = data.bank
-      paymentData.accountNumber = data.accountNumber
+      if (data.bank) params.append('bank', data.bank)
+      if (data.accountNumber) params.append('accountNumber', data.accountNumber)
     } else if (data.type === 'ewallet') {
-      paymentData.ewallet = data.ewallet
-      paymentData.phoneNumber = data.phoneNumber
+      if (data.ewallet) params.append('ewallet', data.ewallet)
+      if (data.phoneNumber) params.append('phoneNumber', data.phoneNumber)
     } else if (data.type === 'pulsa') {
-      paymentData.provider = data.provider
-      paymentData.phoneNumber = data.phoneNumber
+      if (data.provider) params.append('provider', data.provider)
+      if (data.phoneNumber) params.append('phoneNumber', data.phoneNumber)
     } else if (data.type === 'gold') {
-      paymentData.grams = data.grams
+      if (data.grams) params.append('grams', String(data.grams))
     } else if (data.type === 'token') {
-      paymentData.meterNumber = data.meterNumber
+      if (data.meterNumber) params.append('meterNumber', data.meterNumber)
     }
 
-    // Generate URL with base64 encoded data (instant, no API call)
-    const token = btoa(JSON.stringify(paymentData))
-    return `${baseUrl}/payment?data=${encodeURIComponent(token)}`
+    return `${baseUrl}/payment?${params.toString()}`
   }
 
   const handleCloseOnboarding = () => {
