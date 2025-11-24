@@ -279,11 +279,12 @@ export default function Home() {
                     feedback.confirmation(confirmMsg)
 
                     // Restart listening for confirmation
-                    const ttsDelay = confirmMsg.length * 50 + 1000
+                    const ttsDelay = confirmMsg.length * 80 + 1500
                     setTimeout(() => {
                       if (recognitionRef.current) {
                         try {
                           recognitionRef.current.start()
+                          setIsListening(true)
                         } catch (e) {}
                       }
                     }, ttsDelay)
@@ -294,11 +295,12 @@ export default function Home() {
                     setTranscript('')
 
                     // Restart listening after prompt
-                    const ttsDelay = retryMsg.length * 80 + 500
+                    const ttsDelay = retryMsg.length * 100 + 1000
                     setTimeout(() => {
                       if (recognitionRef.current) {
                         try {
                           recognitionRef.current.start()
+                          setIsListening(true)
                         } catch (e) {}
                       }
                     }, ttsDelay)
@@ -367,12 +369,13 @@ export default function Home() {
                 speak(valuePrompt, true)
 
                 // Restart listening after TTS finishes
-                const ttsDelay = valuePrompt.length * 80 + 500
+                const ttsDelay = valuePrompt.length * 100 + 1000
                 setTimeout(() => {
                   stopSpeaking() // Make sure TTS is stopped
                   if (recognitionRef.current) {
                     try {
                       recognitionRef.current.start()
+                      setIsListening(true)
                     } catch (e) {}
                   }
                 }, ttsDelay)
@@ -393,12 +396,13 @@ export default function Home() {
                 speak(retryMsg, true)
 
                 // Restart listening after TTS finishes
-                const ttsDelay = retryMsg.length * 80 + 500
+                const ttsDelay = retryMsg.length * 100 + 1000
                 setTimeout(() => {
                   stopSpeaking() // Make sure TTS is stopped
                   if (recognitionRef.current) {
                     try {
                       recognitionRef.current.start()
+                      setIsListening(true)
                     } catch (e) {}
                   }
                 }, ttsDelay)
@@ -425,12 +429,13 @@ export default function Home() {
               speak(correctionMsg, true)
 
               // Restart listening after TTS finishes
-              const ttsDelay = correctionMsg.length * 80 + 500
+              const ttsDelay = correctionMsg.length * 100 + 1000
               setTimeout(() => {
                 stopSpeaking() // Make sure TTS is stopped
                 if (recognitionRef.current) {
                   try {
                     recognitionRef.current.start()
+                    setIsListening(true)
                   } catch (e) {}
                 }
               }, ttsDelay)
