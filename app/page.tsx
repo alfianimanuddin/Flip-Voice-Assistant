@@ -528,9 +528,8 @@ export default function Home() {
               vibrate('success')
               speak('Oke, membuka halaman pembayaran')
               // Open payment URL - use location.href to avoid popup blocker
-              generateShareableUrl(extractedDataRef.current).then(url => {
-                window.location.href = url
-              })
+              const url = generateShareableUrl(extractedDataRef.current)
+              window.location.href = url
               // Reset app state after TTS completes - return to default voice recording
               const resetDelay = 'Oke, membuka halaman pembayaran'.length * 80 + 1000
               setTimeout(() => {
@@ -1029,7 +1028,7 @@ export default function Home() {
     return 'Sudah benar?'
   }
 
-  const generateShareableUrl = async (data: TransactionData): Promise<string> => {
+  const generateShareableUrl = (data: TransactionData): string => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
 
     // Prepare payment data
@@ -1054,27 +1053,9 @@ export default function Home() {
       paymentData.meterNumber = data.meterNumber
     }
 
-    // Get encrypted token from API
-    try {
-      const response = await fetch('/api/payment-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(paymentData)
-      })
-
-      if (response.ok) {
-        const { token } = await response.json()
-        return `${baseUrl}/payment?token=${token}`
-      }
-    } catch (error) {
-      console.error('Failed to generate secure token:', error)
-    }
-
-    // Fallback to basic URL (not recommended for production)
-    const params = new URLSearchParams()
-    params.append('type', data.type)
-    if (data.amount) params.append('amount', data.amount.toString())
-    return `${baseUrl}/payment?${params.toString()}`
+    // Generate URL with base64 encoded data (instant, no API call)
+    const token = btoa(JSON.stringify(paymentData))
+    return `${baseUrl}/payment?data=${encodeURIComponent(token)}`
   }
 
   const handleCloseOnboarding = () => {
