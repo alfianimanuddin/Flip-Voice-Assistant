@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 
+// Use Edge Runtime for lower latency
+export const runtime = 'edge'
+
 // Simple in-memory rate limiter (use Redis in production)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
 const RATE_LIMIT = 10 // requests per window
@@ -83,26 +86,8 @@ export async function POST(request: NextRequest) {
       apiKey: process.env.ANTHROPIC_API_KEY,
     })
 
-    // Fetch learning patterns from previous successful transactions
-    let learningExamples = ''
-    try {
-      const feedbackResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3003'}/api/feedback`)
-      if (feedbackResponse.ok) {
-        const feedbackData = await feedbackResponse.json()
-        if (feedbackData.patterns && feedbackData.patterns.length > 0) {
-          // Use last 5 successful patterns
-          const recentPatterns = feedbackData.patterns.slice(-5)
-          learningExamples = '\n\nLEARNING FROM RECENT SUCCESSFUL TRANSACTIONS:\n'
-          recentPatterns.forEach((pattern: any) => {
-            learningExamples += `"${pattern.input}" -> ${JSON.stringify(pattern.output)}\n`
-          })
-          learningExamples += '\nUse these patterns to better understand user input variations.\n'
-        }
-      }
-    } catch (error) {
-      // Silently fail - learning is optional
-      console.log('Could not fetch learning patterns:', error)
-    }
+    // Skip learning patterns fetch to reduce latency
+    const learningExamples = ''
 
     // Build the prompt with context if available
     let promptPrefix = ''
@@ -128,7 +113,7 @@ ${learningExamples}
 
     // Call Claude API
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 1000,
       messages: [
         {
