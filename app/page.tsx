@@ -210,6 +210,7 @@ export default function Home() {
                 // Start new silence detection (2 seconds) - same as normal flow
                 silenceDetectionRef.current = setTimeout(() => {
                   // User has been silent for 2 seconds, process the correction value
+                  intentionalCloseRef.current = true // Prevent onend from restarting
                   if (recognitionRef.current) {
                     recognitionRef.current.stop()
                   }
@@ -353,6 +354,7 @@ export default function Home() {
 
               if (fieldToCorrect) {
                 // Stop recognition to prevent picking up TTS
+                intentionalCloseRef.current = true
                 if (recognitionRef.current) {
                   try {
                     recognitionRef.current.stop()
@@ -382,6 +384,7 @@ export default function Home() {
                 return
               } else {
                 // Stop recognition to prevent picking up TTS
+                intentionalCloseRef.current = true
                 if (recognitionRef.current) {
                   try {
                     recognitionRef.current.stop()
@@ -413,6 +416,7 @@ export default function Home() {
             // Check for cancellation/correction words
             if (lowerText.includes('salah') || lowerText.includes('koreksi') || lowerText.includes('ganti')) {
               // User wants to correct - stop recognition first to prevent picking up TTS
+              intentionalCloseRef.current = true
               if (recognitionRef.current) {
                 try {
                   recognitionRef.current.stop()
@@ -445,6 +449,7 @@ export default function Home() {
             // Check for complete cancel
             if (lowerText.includes('batal') || lowerText.includes('ulangi') || lowerText.includes('cancel') || lowerText.includes('tidak')) {
               // User wants to cancel completely - restart
+              intentionalCloseRef.current = true
               if (recognitionRef.current) {
                 try {
                   recognitionRef.current.stop()
@@ -477,6 +482,7 @@ export default function Home() {
             // Check for confirmation words
             if (lowerText.includes('konfirmasi') || lowerText.includes('confirm') || lowerText.includes('ya') || lowerText.includes('oke') || lowerText.includes('ok') || lowerText.includes('lanjut') || lowerText.includes('benar') || lowerText.includes('betul')) {
               // User confirmed - proceed to payment
+              intentionalCloseRef.current = true
               if (recognitionRef.current) {
                 try {
                   recognitionRef.current.stop()
