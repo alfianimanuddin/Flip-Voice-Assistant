@@ -21,6 +21,12 @@ export function useFeedback(options: UseFeedbackOptions = {}) {
 
   // Text-to-Speech
   const speak = useCallback((text: string, priority: boolean = false) => {
+    // Check if TTS is enabled
+    const isTTSEnabled = process.env.NEXT_PUBLIC_ENABLE_TTS !== 'false'
+    if (!isTTSEnabled) {
+      return
+    }
+
     if (typeof window === 'undefined' || !window.speechSynthesis) {
       console.warn('Speech synthesis not supported')
       return

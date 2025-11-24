@@ -5,7 +5,6 @@ import Onboarding from './components/Onboarding'
 import VoiceRecording from './components/VoiceRecording'
 import { useFeedback } from './hooks/useFeedback'
 import { getEnabledTypes, isTypeEnabled } from './config/transactionTypes'
-import { parseTransaction } from '../lib/parser'
 
 interface TransactionData {
   type: 'transfer' | 'ewallet' | 'pulsa' | 'gold' | 'token'
@@ -108,25 +107,51 @@ export default function Home() {
     }
   }
 
-  // Generate prompt asking for specific field value
-  const getFieldValuePrompt = (field: string): string => {
+  // Generate prompt asking for specific field value with current value context
+  const getFieldValuePrompt = (field: string, currentData?: TransactionData | null): string => {
+    if (!currentData) {
+      // Fallback to simple prompts if no current data
+      switch (field) {
+        case 'bank':
+          return 'Nama banknya?'
+        case 'accountNumber':
+          return 'Nomor rekeningnya?'
+        case 'ewallet':
+          return 'Nama e-walletnya?'
+        case 'phoneNumber':
+          return 'Nomor HPnya?'
+        case 'provider':
+          return 'Nama providernya?'
+        case 'amount':
+          return 'Nominalnya berapa?'
+        case 'grams':
+          return 'Berapa gram?'
+        case 'meterNumber':
+          return 'Nomor meternya?'
+        default:
+          return 'Yang benar apa?'
+      }
+    }
+
+    // Show current value and ask for correction
     switch (field) {
       case 'bank':
-        return 'Nama banknya?'
+        return `Sekarang ${currentData.bank}. Bank yang baru?`
       case 'accountNumber':
-        return 'Nomor rekeningnya?'
+        return `Sekarang ${spellDigits(currentData.accountNumber)}. Nomor rekening yang baru?`
       case 'ewallet':
-        return 'Nama e-walletnya?'
+        return `Sekarang ${currentData.ewallet}. E-wallet yang baru?`
       case 'phoneNumber':
-        return 'Nomor HPnya?'
+        return `Sekarang ${spellDigits(currentData.phoneNumber)}. Nomor HP yang baru?`
       case 'provider':
-        return 'Nama providernya?'
+        return `Sekarang ${currentData.provider}. Provider yang baru?`
       case 'amount':
-        return 'Nominalnya berapa?'
+        const amountWords = formatAmountToWords(currentData.amount)
+        return `Sekarang ${amountWords} rupiah. Nominal yang baru?`
       case 'grams':
-        return 'Berapa gram?'
+        return `Sekarang ${currentData.grams} gram. Berapa gram yang baru?`
       case 'meterNumber':
-        return 'Nomor meternya?'
+        return `Sekarang ${spellDigits(currentData.meterNumber)}. Nomor meter yang baru?`
       default:
         return 'Yang benar apa?'
     }
@@ -322,7 +347,7 @@ export default function Home() {
                     }, ttsDelay)
                   } else {
                     // Couldn't parse value - ask again
-                    const retryMsg = getFieldValuePrompt(field!)
+                    const retryMsg = getFieldValuePrompt(field!, extractedDataRef.current)
                     speak(retryMsg, true)
                     setTranscript('')
 
@@ -396,7 +421,7 @@ export default function Home() {
 
                 // Ask for the correct value
                 setCorrectionField(fieldToCorrect)
-                const valuePrompt = getFieldValuePrompt(fieldToCorrect)
+                const valuePrompt = getFieldValuePrompt(fieldToCorrect, extractedDataRef.current)
                 setCorrectionMessage(valuePrompt)
                 setTranscript('') // Clear transcript for fresh value input
                 setInterimTranscript('')
@@ -771,39 +796,25 @@ export default function Home() {
       console.log('Extracting from text:', sanitizedText)
       console.log('Conversation context:', conversationContext)
 
-      let data: any = null
+      // Use Claude API for extraction
+      const response = await fetch('/api/extract', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: sanitizedText,
+          context: conversationContext
+        }),
+      })
 
-      // Try local parsing first (instant, no API call)
-      if (!conversationContext) {
-        const localResult = parseTransaction(sanitizedText)
-        if (localResult) {
-          console.log('Local parsing succeeded:', localResult)
-          data = localResult
-        }
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('API Error:', errorData)
+        throw new Error(errorData.error || 'Failed to extract data')
       }
 
-      // Fall back to API if local parsing failed
-      if (!data) {
-        console.log('Falling back to API...')
-        const response = await fetch('/api/extract', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            text: sanitizedText,
-            context: conversationContext
-          }),
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          console.error('API Error:', errorData)
-          throw new Error(errorData.error || 'Failed to extract data')
-        }
-
-        data = await response.json()
-      }
+      const data = await response.json()
 
       console.log('Extracted data:', data)
 
