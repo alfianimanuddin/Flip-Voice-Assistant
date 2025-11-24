@@ -59,6 +59,35 @@ export default function Home() {
   const intentionalCloseRef = useRef<boolean>(false)
   const showCorrectionPromptRef = useRef<boolean>(false)
   const correctionFieldRef = useRef<string | null>(null)
+  const isAccessibilityModeRef = useRef<boolean>(false)
+
+  // Detect accessibility features (TalkBack/VoiceOver)
+  useEffect(() => {
+    const detectAccessibility = () => {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const prefersContrast = window.matchMedia('(prefers-contrast: more)').matches
+      isAccessibilityModeRef.current = prefersReducedMotion || prefersContrast
+    }
+    detectAccessibility()
+
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const contrastQuery = window.matchMedia('(prefers-contrast: more)')
+    motionQuery.addEventListener('change', detectAccessibility)
+    contrastQuery.addEventListener('change', detectAccessibility)
+
+    return () => {
+      motionQuery.removeEventListener('change', detectAccessibility)
+      contrastQuery.removeEventListener('change', detectAccessibility)
+    }
+  }, [])
+
+  // Get TTS delay based on accessibility mode
+  const getTtsDelay = (messageLength: number, baseDelay: number = 500) => {
+    if (isAccessibilityModeRef.current) {
+      return messageLength * 60 + baseDelay // Full delay for screen readers
+    }
+    return 200 // Minimal delay for regular users
+  }
 
   // Generate correction prompt based on transaction type
   const getCorrectionPrompt = (type: string): string => {
@@ -280,7 +309,7 @@ export default function Home() {
                     feedback.confirmation(confirmMsg)
 
                     // Restart listening for confirmation
-                    const ttsDelay = confirmMsg.length * 60 + 800
+                    const ttsDelay = getTtsDelay(confirmMsg.length, 800)
                     setTimeout(() => {
                       if (recognitionRef.current) {
                         try {
@@ -297,7 +326,7 @@ export default function Home() {
                     setTranscript('')
 
                     // Restart listening after prompt
-                    const ttsDelay = retryMsg.length * 60 + 500
+                    const ttsDelay = getTtsDelay(retryMsg.length)
                     setTimeout(() => {
                       if (recognitionRef.current) {
                         try {
@@ -373,7 +402,7 @@ export default function Home() {
                 speak(valuePrompt, true)
 
                 // Restart listening after TTS finishes
-                const ttsDelay = valuePrompt.length * 60 + 500
+                const ttsDelay = getTtsDelay(valuePrompt.length)
                 setTimeout(() => {
                   stopSpeaking() // Make sure TTS is stopped
                   if (recognitionRef.current) {
@@ -402,7 +431,7 @@ export default function Home() {
                 speak(retryMsg, true)
 
                 // Restart listening after TTS finishes
-                const ttsDelay = retryMsg.length * 60 + 500
+                const ttsDelay = getTtsDelay(retryMsg.length)
                 setTimeout(() => {
                   stopSpeaking() // Make sure TTS is stopped
                   if (recognitionRef.current) {
@@ -437,7 +466,7 @@ export default function Home() {
               speak(correctionMsg, true)
 
               // Restart listening after TTS finishes
-              const ttsDelay = correctionMsg.length * 60 + 500
+              const ttsDelay = getTtsDelay(correctionMsg.length)
               setTimeout(() => {
                 stopSpeaking() // Make sure TTS is stopped
                 if (recognitionRef.current) {
